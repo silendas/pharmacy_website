@@ -1,4 +1,4 @@
-export { default as Home } from './Home';
+export { default as Home } from './Home.jsx';
 export { default as Costumer } from './Costumer';
 export { default as Tables } from './Tables';
 export { default as Notifications } from './Notifications';
