@@ -1,5 +1,5 @@
 
-export { default as Costumer } from '@/pages/dashboard/costumer';
+export { default as Costumer } from '@/pages/dashboard/Costumer';
 export { default as Tables } from '@/pages/dashboard/Tables';
 export { default as Notifications } from '@/pages/dashboard/Notifications';
 export { default as BarangMasuk } from '@/pages/dashboard/BarangMasuk';
