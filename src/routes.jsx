@@ -106,21 +106,22 @@ export const routes = [
       {
         icon: <WalletIcon {...icon} />,
         name: "Pembayaran",
-        dropdown: true, // Menandakan bahwa ini adalah dropdown
+        dropdown: true,
+        roles: [1, 2, 3], // Role 1, 2, 3 bisa mengakses halaman ini
         pages: [
           {
-            icon: <UserGroupIcon {...icon} />, 
+            icon: <UserGroupIcon {...icon} />,
             name: "Kasir",
             path: "/Kasir",
             element: <Kasir />,
+            roles: [1, 2], // Role 1 dan 2 bisa mengakses halaman ini
           },
-       
-     
           {
-            icon: <ChartBarIcon {...icon} />, 
+            icon: <ChartBarIcon {...icon} />,
             name: "Laporan Pembayaran",
             path: "/LaporanPembayaran",
             element: <LaporanPembayaran />,
+            roles: [1, 2], // Role 1 dan 2 bisa mengakses halaman ini
           },
         ],
       },

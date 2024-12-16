@@ -2,12 +2,7 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Link, NavLink } from "react-router-dom";
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import {
-  Avatar,
-  Button,
-  IconButton,
-  Typography,
-} from "@material-tailwind/react";
+import { Button, IconButton, Typography } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 
 export function Sidenav({ brandImg, brandName, routes }) {
@@ -20,9 +15,9 @@ export function Sidenav({ brandImg, brandName, routes }) {
     transparent: "bg-transparent",
   };
 
-  const [dropdownState, setDropdownState] = useState({}); // Untuk melacak dropdown mana yang terbuka
+  const [dropdownState, setDropdownState] = useState({}); // To track which dropdown is open
 
-  // Fungsi untuk mengatur dropdown toggle
+  // Toggle dropdown state
   const toggleDropdown = (name) => {
     setDropdownState((prevState) => ({
       ...prevState,
@@ -36,8 +31,10 @@ export function Sidenav({ brandImg, brandName, routes }) {
         openSidenav ? "translate-x-0" : "-translate-x-80"
       } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0 border border-blue-gray-100`}
     >
-      <div className={`relative`}>
+      <div className="relative">
+        {/* Brand Image and Name */}
         <Link to="/" className="py-6 px-8 text-center">
+          {brandImg && <img src={brandImg} alt={brandName} className="h-10 mx-auto" />}
           <Typography variant="h6" color="white">
             {brandName}
           </Typography>
@@ -73,16 +70,13 @@ export function Sidenav({ brandImg, brandName, routes }) {
                   <div>
                     <Button
                       variant="text"
-                      color="transparent"
+                      color="blue-gray" // Changed color to blue-gray
                       className="flex items-center gap-4 px-4 capitalize text-white"
                       onClick={() => toggleDropdown(name)}
                       fullWidth
                     >
                       {icon}
-                      <Typography
-                        color="inherit"
-                        className="font-medium capitalize"
-                      >
+                      <Typography color="inherit" className="font-medium capitalize">
                         {name}
                       </Typography>
                       {dropdownState[name] ? (
@@ -91,7 +85,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
                         <ChevronDownIcon className="h-5 w-5" />
                       )}
                     </Button>
-                    {/* Sub-menu pertama */}
+                    {/* Sub-menu for the first level dropdown */}
                     {dropdownState[name] && (
                       <ul className="ml-4 mt-2 space-y-2">
                         {subPages.map(({ icon, name, path, dropdown, pages: subSubPages }) => (
@@ -100,16 +94,13 @@ export function Sidenav({ brandImg, brandName, routes }) {
                               <div>
                                 <Button
                                   variant="text"
-                                  color="transparent"
+                                  color="blue-gray" // Changed color to blue-gray
                                   className="flex items-center gap-4 px-4 capitalize text-white"
                                   onClick={() => toggleDropdown(name + "-sub")}
                                   fullWidth
                                 >
                                   {icon}
-                                  <Typography
-                                    color="inherit"
-                                    className="font-medium capitalize"
-                                  >
+                                  <Typography color="inherit" className="font-medium capitalize">
                                     {name}
                                   </Typography>
                                   {dropdownState[name + "-sub"] ? (
@@ -127,15 +118,12 @@ export function Sidenav({ brandImg, brandName, routes }) {
                                           {({ isActive }) => (
                                             <Button
                                               variant={isActive ? "gradient" : "text"}
-                                              color={isActive ? "lime" : "transparent"}
+                                              color={isActive ? "lime" : "blue-gray"} // Changed to blue-gray
                                               className="flex items-center gap-4 px-4 capitalize text-white"
                                               fullWidth
                                             >
                                               {icon}
-                                              <Typography
-                                                color="inherit"
-                                                className="font-medium capitalize"
-                                              >
+                                              <Typography color="inherit" className="font-medium capitalize">
                                                 {name}
                                               </Typography>
                                             </Button>
@@ -151,15 +139,12 @@ export function Sidenav({ brandImg, brandName, routes }) {
                                 {({ isActive }) => (
                                   <Button
                                     variant={isActive ? "gradient" : "text"}
-                                    color={isActive ? "lime" : "transparent"}
+                                    color={isActive ? "lime" : "blue-gray"} // Changed to blue-gray
                                     className="flex items-center gap-4 px-4 capitalize text-white"
                                     fullWidth
                                   >
                                     {icon}
-                                    <Typography
-                                      color="inherit"
-                                      className="font-medium capitalize"
-                                    >
+                                    <Typography color="inherit" className="font-medium capitalize">
                                       {name}
                                     </Typography>
                                   </Button>
@@ -176,15 +161,12 @@ export function Sidenav({ brandImg, brandName, routes }) {
                     {({ isActive }) => (
                       <Button
                         variant={isActive ? "gradient" : "text"}
-                        color={isActive ? "lime" : "transparent"}
+                        color={isActive ? "lime" : "blue-gray"} // Changed to blue-gray
                         className="flex items-center gap-4 px-4 capitalize text-white"
                         fullWidth
                       >
                         {icon}
-                        <Typography
-                          color="inherit"
-                          className="font-medium capitalize"
-                        >
+                        <Typography color="inherit" className="font-medium capitalize">
                           {name}
                         </Typography>
                       </Button>
@@ -211,6 +193,6 @@ Sidenav.propTypes = {
   routes: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
-Sidenav.displayName = "/src/widgets/layout/sidnave.jsx";
+Sidenav.displayName = "Sidenav"; // Ensure correct display name
 
 export default Sidenav;

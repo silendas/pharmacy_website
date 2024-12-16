@@ -97,102 +97,72 @@ const DaftarGaji = () => {
 
   const generatePDF = (salary) => {
     const doc = new jsPDF();
-  
+
     // Header Section
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
-    doc.text('SLIP GAJI', 105, 20, { align: 'center' });
-  
+    doc.text('PT Apoteker', 105, 20, { align: 'center' });
+
     doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.text('Laporan Gaji Karyawan', 105, 30, { align: 'center' });
+    doc.setLineWidth(0.5);
+    doc.line(15, 35, 195, 35); // Garis horizontal di bawah header
+
+    // Body Section: Tabel dengan Garis
+    let startY = 50; // Posisi awal tabel
     doc.setFontSize(10);
-    doc.text('[NAMA PT]', 20, 30);
-    doc.text('Alamat PT', 20, 36);
-    doc.line(20, 40, 190, 40); // Horizontal line
-  
-    // Employee Details
-    doc.text('Periode:', 140, 30);
-    doc.text(salary.period || '[Periode]', 170, 30, { align: 'right' });
-    doc.text('Nama Karyawan:', 140, 36);
-    doc.text(salary.Employee?.name || '[Nama Karyawan]', 170, 36, { align: 'right' });
-    doc.text('Jabatan:', 140, 42);
-    doc.text(salary.Employee?.position || '[Jabatan]', 170, 42, { align: 'right' });
-    doc.text('Status:', 140, 48);
-    doc.text(salary.Employee?.status || '[Status]', 170, 48, { align: 'right' });
-    doc.text('PTKP:', 140, 54);
-    doc.text(salary.Employee?.ptkp || '[PTKP]', 170, 54, { align: 'right' });
-  
-    // Penerimaan Section
-    let y = 60;
     doc.setFont('helvetica', 'bold');
-    doc.text('PENERIMAAN', 20, y);
-    y += 6;
-  
+
+    // Header tabel
+    doc.text('Informasi Gaji', 15, startY - 10);
+    doc.setDrawColor(0); // Hitam
+    doc.setFillColor(220, 220, 220); // Abu-abu terang
+    doc.rect(15, startY - 5, 180, 10, 'F'); // Header tabel dengan latar abu-abu
+    doc.text('Field', 20, startY);
+    doc.text('Detail', 120, startY);
+    startY += 10;
+
+    // Isi tabel
     doc.setFont('helvetica', 'normal');
-    const earnings = [
-      { label: 'Gaji Pokok', value: salary.earnings?.find(e => e.label === 'Gaji Pokok')?.value || 0 },
-      { label: 'Tunjangan Jabatan', value: salary.earnings?.find(e => e.label === 'Tunjangan Jabatan')?.value || 0 },
-      { label: 'Tunjangan Transportasi', value: salary.earnings?.find(e => e.label === 'Tunjangan Transportasi')?.value || 0 },
-      { label: 'Tunjangan Makan', value: salary.earnings?.find(e => e.label === 'Tunjangan Makan')?.value || 0 },
-      { label: 'Lembur', value: salary.earnings?.find(e => e.label === 'Lembur')?.value || 0 },
-      { label: 'Bonus / THR', value: salary.earnings?.find(e => e.label === 'Bonus / THR')?.value || 0 },
+    const fields = [
+        { label: 'Nama Karyawan', value: salary.Employee?.name || '-' },
+        { label: 'Gaji', value: `Rp ${salary.amount.toLocaleString('id-ID')}` },
+        { label: 'Periode', value: salary.period },
+        { label: 'Tanggal Pembayaran', value: salary.payment_date || '-' },
+        { label: 'Metode Pembayaran', value: 'Transfer' },
     ];
-  
-    let totalEarnings = 0;
-    earnings.forEach((item) => {
-      doc.text(`- ${item.label}`, 20, y);
-      doc.text(`Rp. ${item.value.toLocaleString('id-ID')}`, 170, y, { align: 'right' });
-      totalEarnings += item.value;
-      y += 6;
+
+    fields.forEach((field, index) => {
+        doc.text(field.label, 20, startY);
+        doc.text(field.value, 120, startY);
+        doc.line(15, startY + 2, 195, startY + 2); // Garis horizontal antar baris
+        startY += 10;
     });
-  
-    doc.setFont('helvetica', 'bold');
-    doc.text('Total Penghasilan Bruto', 20, y);
-    doc.text(`Rp. ${totalEarnings.toLocaleString('id-ID')}`, 170, y, { align: 'right' });
-    y += 6;
-  
-    // Pengurangan Section
-    const deductions = [
-      { label: 'Tabungan Koperasi', value: salary.deductions?.find(d => d.label === 'Tabungan Koperasi')?.value || 0 },
-    ];
-  
-    let totalDeductions = 0;
-    deductions.forEach((item) => {
-      doc.text(`${item.label}`, 20, y);
-      doc.text(`Rp. ${item.value.toLocaleString('id-ID')}`, 170, y, { align: 'right' });
-      totalDeductions += item.value;
-      y += 6;
-    });
-  
-    doc.setFont('helvetica', 'bold');
-    doc.text('Penerima Bersih', 20, y);
-    const netSalary = totalEarnings - totalDeductions;
-    doc.text(`Rp. ${netSalary.toLocaleString('id-ID')}`, 170, y, { align: 'right' });
-    y += 10;
-  
-    // Terbilang Section
-    doc.setFont('helvetica', 'normal');
-    doc.text('Terbilang :', 20, y);
-    y += 10;
-  
-    // Footer
-    y += 10;
-    const currentDate = new Date();
-    doc.text(`Kota, ${currentDate.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}`, 20, y);
-    y += 6;
-  
-    doc.text('Penerima', 20, y);
-    doc.text('[Nama Perusahaan]', 170, y, { align: 'right' });
-    y += 20;
-  
-    doc.text('[Nama Karyawan]', 20, y);
-    doc.text('[Nama HRD Payroll]', 170, y, { align: 'right' });
-  
-    // Save the PDF
-    doc.save(`Slip-Gaji-${salary.Employee?.name || 'N/A'}.pdf`);
-  };
-  
-  
-  
+
+    // Footer Section: Tanda Tangan
+    doc.setFontSize(10);
+    startY += 20;
+    doc.text('Mengetahui,', 20, startY); // Mengetahui bagian HRD
+    doc.text('Pihak Karyawan,', 140, startY); // Pihak karyawan di sisi kanan
+    startY += 30;
+
+    // Kotak tanda tangan
+    doc.rect(20, startY, 50, 20); // Kotak untuk tanda tangan HRD
+    doc.rect(140, startY, 50, 20); // Kotak untuk tanda tangan karyawan
+
+    // Teks di dalam kotak
+    doc.text('HRD', 45, startY + 15, { align: 'center' }); // Label untuk HRD
+    doc.text(salary.Employee?.name || 'Nama Karyawan', 165, startY + 15, { align: 'center' }); // Nama Karyawan
+
+    // Save PDF
+    doc.save(`Gaji_${salary.Employee?.name || salary.employee_id}.pdf`);
+};
+
+
+
+
+    
   return (
     <>
       <Card className="mt-20">

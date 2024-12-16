@@ -71,15 +71,15 @@ export function Costumer() {
     try {
       if (editingId) {
         await axios.put(`${API_URL}/customers/${editingId}`, customerData, { headers });
-        setAlert({ type: 'success', message: 'Customer updated successfully!' });
+        setAlert({ type: 'success', message: 'Customer berhasil diupdate!' });
       } else {
         await axios.post(`${API_URL}/customers`, customerData, { headers });
-        setAlert({ type: 'success', message: 'Customer added successfully!' });
+        setAlert({ type: 'success', message: 'Customer berhasil ditambahkan!' });
       }
       await fetchCustomers();
       resetForm();
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to save customer';
+      const errorMessage = error.response?.data?.message || 'Gagal menyimpan customer';
       setAlert({ type: 'error', message: errorMessage });
     } finally {
       setLoading(false);
@@ -115,14 +115,27 @@ export function Costumer() {
   const handleDelete = async () => {
     try {
       await axios.delete(`${API_URL}/customers/${deleteId}`, { headers });
-      setAlert({ type: 'success', message: 'Customer deleted successfully!' });
+      setAlert({ type: 'success', message: 'Customer berhasil dihapus!' });
       await fetchCustomers();
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to delete customer';
+      const errorMessage = error.response?.data?.message || 'Gagal menghapus Costumer';
       setAlert({ type: 'error', message: errorMessage });
     } finally {
       closeModal();
     }
+  };
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCustomers = filteredCustomers.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -200,8 +213,8 @@ export function Costumer() {
               </div>
             </div>
             <div className="mt-4 text-center">
-              <Button type="submit" className="bg-lime-400 text-white">
-                {editingId ? 'Update' : 'Save'}
+              <Button type="submit" className="bg-black text-white">
+                {editingId ? 'Update' : 'Simpan'}
               </Button>
             </div>
           </form>
@@ -233,7 +246,7 @@ export function Costumer() {
             </div>
           )}
           <div className="overflow-x-auto">
-            <table className="min-w-full table-auto text-left">
+            <table className="min-w-full table-auto text-center">
               <thead>
                 <tr>
                   <th className="p-2">No</th>
@@ -245,32 +258,35 @@ export function Costumer() {
                 </tr>
               </thead>
               <tbody>
-                {filteredCustomers.length === 0 ? (
+                {currentCustomers.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="text-center text-gray-500">
                       No customers found.
                     </td>
                   </tr>
                 ) : (
-                  filteredCustomers.map((customer, index) => (
+                  currentCustomers.map((customer, index) => (
                     <tr key={customer.id} className="border-b">
-                      <td className="p-2">{index + 1}</td>
+                      <td className="p-2">{index + 1 + (currentPage - 1) * itemsPerPage}</td>
                       <td className="p-2">{customer.nik}</td>
                       <td className="p-2">{customer.name}</td>
                       <td className="p-2">{customer.phone}</td>
                       <td className="p-2">{customer.address}</td>
                       <td className="p-2">
                         <Button
-                          className="bg-lime-400 text-white mr-2"
                           onClick={() => handleEdit(customer)}
+                          color="lime"
+                          size="sm"
+                          className="mr-2"
                         >
-                          <PencilIcon className="h-4 w-4 inline mr-1" /> Edit
+                          <PencilIcon className="w-5 h-5" />
                         </Button>
                         <Button
-                          color="red"
                           onClick={() => openModal(customer.id)}
+                          color="red"
+                          size="sm"
                         >
-                          <TrashIcon className="h-4 w-4 inline mr-1" /> Delete
+                          <TrashIcon className="w-5 h-5" />
                         </Button>
                       </td>
                     </tr>
@@ -279,42 +295,54 @@ export function Costumer() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          <div className="mt-5 flex justify-end items-end">
+            <Button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="bg-gray-500 text-white mx-2"
+            >
+              Previous
+            </Button>
+
+            {/* Page numbers */}
+            {Array.from({ length: totalPages }, (_, index) => (
+              <Button
+                key={index}
+                onClick={() => handlePageChange(index + 1)}
+                className={`mx-1 ${currentPage === index + 1 ? 'bg-lime-500 text-black' : 'bg-black'}`}
+              >
+                {index + 1}
+              </Button>
+            ))}
+
+            <Button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="bg-black text-white mx-2"
+            >
+              Next
+            </Button>
+          </div>
         </CardBody>
       </Card>
 
-      {/* Modal Konfirmasi Hapus */}
+      {/* Confirmation Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-96">
-            <Typography variant="h5" color="gray" className="mb-4">
-              Konfirmasi Hapus
-            </Typography>
-            <Typography variant="body1" color="gray" className="mb-6">
-              Apakah Anda yakin ingin menghapus customer ini?
-            </Typography>
-            <div className="flex justify-end">
-              <Button
-                color="gray"
-                onClick={closeModal}
-                className="mr-2"
-              >
-                Cancel
-              </Button>
-              <Button
-                color="red"
-                onClick={handleDelete}
-              >
-                Hapus
-              </Button>
+        <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <div className="text-center">
+              <Typography variant="h6">Pakah anda yakin ingin menghapus data costumer?</Typography>
+              <div className="mt-4 flex justify-center">
+                <Button onClick={closeModal} className="mr-2" color="gray">Batal</Button>
+                <Button onClick={handleDelete} color="red">Hapus</Button>
+              </div>
             </div>
           </div>
         </div>
       )}
-
-
-      buatkan next page yang ditampilkan hanya 8 jika lebih dari 8 makan bisa dinextpage
     </>
   );
 }
-
 export default Costumer;

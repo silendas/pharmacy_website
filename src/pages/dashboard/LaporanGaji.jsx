@@ -48,30 +48,62 @@ const LaporanGaji = () => {
 
   const generatePDF = () => {
     const doc = new jsPDF();
+  
+    // Header
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
     doc.text('Laporan Gaji Karyawan', 105, 20, { align: 'center' });
-
-    let yPosition = 30;
-
-    filteredGaji.forEach((salary) => {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.text(`Nama Karyawan: ${salary.Employee?.name || '-'}`, 20, yPosition);
-      doc.text(`Gaji: Rp ${salary.amount.toLocaleString('id-ID')}`, 20, yPosition + 10);
-      doc.text(`Periode: ${salary.period}`, 20, yPosition + 20);
-      doc.text(`Tanggal Pembayaran: ${salary.payment_date || '-'}`, 20, yPosition + 30);
-
-      const paymentStatus = salary.payment_date ? 'Paid' : 'Not Paid';
-      const paymentStatusColor = salary.payment_date ? 'green' : 'red';
-      doc.setTextColor(paymentStatusColor === 'green' ? 0 : 255, paymentStatusColor === 'green' ? 128 : 0, 0);
-      doc.text(`Status: ${paymentStatus}`, 20, yPosition + 40);
-
-      yPosition += 50;
+  
+    // Define table columns
+    const tableColumns = [
+      { header: 'Nama Karyawan', dataKey: 'name' },
+      { header: 'Gaji (Rp)', dataKey: 'amount' },
+      { header: 'Periode', dataKey: 'period' },
+      { header: 'Tanggal Pembayaran', dataKey: 'payment_date' },
+      { header: 'Status', dataKey: 'status' },
+    ];
+  
+    // Prepare table data
+    const tableData = filteredGaji.map((salary) => ({
+      name: salary.Employee?.name || '-',
+      amount: salary.amount.toLocaleString('id-ID'),
+      period: salary.period,
+      payment_date: salary.payment_date || '-',
+      status: salary.payment_date ? 'Paid' : 'Not Paid',
+    }));
+  
+    // Generate table
+    doc.autoTable({
+      startY: 30,
+      columns: tableColumns,
+      body: tableData,
+      theme: 'striped',
+      styles: {
+        halign: 'left',
+      },
+      headStyles: {
+        fillColor: [0, 102, 204], // Header background color
+        textColor: [255, 255, 255], // Header text color
+        fontStyle: 'bold',
+      },
+      bodyStyles: {
+        textColor: [0, 0, 0],
+      },
+      columnStyles: {
+        amount: { halign: 'right' }, // Right-align "Gaji (Rp)"
+      },
+      didDrawCell: (data) => {
+        if (data.column.dataKey === 'status') {
+          const statusColor = data.cell.raw === 'Paid' ? [0, 128, 0] : [255, 0, 0];
+          data.cell.styles.textColor = statusColor; // Set text color based on status
+        }
+      },
     });
-
+  
+    // Save PDF
     doc.save('Laporan-Gaji-Karyawan.pdf');
   };
+  
 
   const generateExcel = () => {
     const ws = XLSX.utils.json_to_sheet(filteredGaji.map(salary => ({

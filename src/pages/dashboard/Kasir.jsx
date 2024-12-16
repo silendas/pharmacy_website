@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { jsPDF } from "jspdf"; // Import jsPDF
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Typography,
-  Button,
-  Select,
-  Option,
-} from "@material-tailwind/react";
+import { jsPDF } from "jspdf";
+import { Card, CardBody, CardHeader, Typography, Button, Select, Option } from "@material-tailwind/react";
+
+import 'jspdf-autotable';  // Import the plugin
 
 export function Kasir() {
   const [payments, setPayments] = useState([]);
@@ -25,6 +19,8 @@ export function Kasir() {
   const [totalPrice, setTotalPrice] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [paidAmount, setPaidAmount] = useState(0);
+  const [changeAmount, setChangeAmount] = useState(0);
 
   const API_URL = "https://api-pharmacy.silendas.my.id/api";
   const token = localStorage.getItem("authToken");
@@ -178,33 +174,98 @@ export function Kasir() {
 
   const generatePDF = () => {
     const doc = new jsPDF();
-    doc.setFontSize(12);
-    doc.setFontSize(18);
-    doc.text("Toko Pharmacy", 20, 20);
+    
+    // Set up font for receipt header
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Life Care Pharmacy", 20, 20);  // Pharmacy name in bold
+  
+    // Set the transaction number
     const transactionNumber = "TRX-" + new Date().getTime();
-    doc.setFontSize(12);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
     doc.text(`No. Transaksi: ${transactionNumber}`, 20, 30);
+    
+    // Cashier name
     const cashierName = employees.find((emp) => emp.id === selectedEmployee)?.name || 'Unknown';
     doc.text(`Kasir: ${cashierName}`, 20, 40);
+    
+    // Customer name
     doc.text(`Customer: ${selectedCustomerName}`, 20, 50);
+  
+    // Date of transaction
     doc.text(`Tanggal: ${new Date().toLocaleDateString()}`, 20, 60);
-
+    
+    // Draw a line after the header for separation
+    doc.setLineWidth(0.5);
+    doc.line(20, 65, 180, 65); 
+  
     let yPosition = 70;
+    doc.setFontSize(12);
     doc.text("Items Purchased:", 20, yPosition);
     yPosition += 10;
-
-    carts.forEach((cart, index) => {
-      doc.text(`${cart.name} - Qty: ${cart.qty} - Rp ${cart.price.toLocaleString()} - Total: Rp ${cart.total_price.toLocaleString()}`, 20, yPosition);
-      yPosition += 10;
+  
+    // Create table for items with blue color scheme
+    doc.autoTable({
+      startY: yPosition,
+      head: [['Nama', 'Qty', 'Harga', 'Total']],
+      body: carts.map(cart => [
+        cart.name, 
+        cart.qty, 
+        `Rp ${cart.price.toLocaleString()}`, 
+        `Rp ${cart.total_price.toLocaleString()}`
+      ]),
+      theme: 'striped',  // Give a striped effect for better readability
+      headStyles: {
+        fillColor: [0, 0, 255],  // Blue header color
+        fontSize: 10
+      },
+      bodyStyles: {
+        fillColor: [240, 240, 255],  // Light blue body rows
+        fontSize: 10,
+      },
+      margin: { left: 20, right: 20 },
     });
-
+  
+    yPosition = doc.lastAutoTable.finalY + 10;
+    
+    // Total price
+    doc.setFontSize(12);
     doc.text(`Total: Rp ${totalPrice.toLocaleString()}`, 20, yPosition);
+    
+    // Uang yang dibayar (Amount Paid)
+    const amountPaid = 500000;  // Replace with your actual value
+    yPosition += 10;
+    doc.text(`Uang yang dibayar: Rp ${amountPaid.toLocaleString()}`, 20, yPosition);
+  
+    // Kembalian (Change)
+    const change = amountPaid - totalPrice;
+    yPosition += 10;
+    doc.text(`Kembalian: Rp ${change.toLocaleString()}`, 20, yPosition);
+  
+    // Add a message at the bottom
     yPosition += 10;
     doc.text("Terimakasih sudah berbelanja!", 20, yPosition);
+  
+    // Draw a line at the bottom to close the receipt
+    yPosition += 10;
+    doc.line(20, yPosition, 180, yPosition);
+  
+    // Save the file as PDF
     doc.save("invoice.pdf");
+  };
+  
+
+  const handlePaidAmountChange = (e) => {
+    const value = parseFloat(e.target.value) || 0;
+    setPaidAmount(value);
+    setChangeAmount(value - totalPrice);
   };
 
   return (
+    <>
+    
+   
     <Card className="mt-8">
       <CardHeader variant="gradient" color="gray" className="mb-4 p-4">
         <Typography variant="h6" color="white">
@@ -212,10 +273,11 @@ export function Kasir() {
         </Typography>
       </CardHeader>
       <CardBody>
+        {error && <div className="text-red-500">{error}</div>}
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 ">
             <div>
-              <label className="block text-sm font-medium">Customer</label>
+              <label className="block text-sm font-medium">Nama Customer</label>
               <Select
                 value={selectedCustomer}
                 onChange={(value) => {
@@ -224,10 +286,11 @@ export function Kasir() {
                 }}
                 disabled={selectedCustomer}
                 required
+                className="text-black"
               >
                 <Option value="">Pilih Customer</Option>
                 {customers.map((customer) => (
-                  <Option key={customer.id} value={customer.id}>
+                  <Option key={customer.id} value={customer.id} className="text-black">
                     {customer.name}
                   </Option>
                 ))}
@@ -235,11 +298,13 @@ export function Kasir() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Employee</label>
+              <label className="block text-sm font-medium">Nama Karyawan</label>
               <Select
                 value={selectedEmployee}
                 onChange={handleEmployeeSelect}
+                disabled={selectedEmployee}
                 required
+                className="text-black"
               >
                 <Option value="">Pilih Pegawai</Option>
                 {employees.map((employee) => (
@@ -251,95 +316,113 @@ export function Kasir() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Inventory</label>
+              <label className="block text-sm font-medium">Nama Barang</label>
               <Select
                 value={selectedInventory}
-                onChange={(value) => setSelectedInventory(value)}
+                onChange={(value) => setSelectedInventory(value)} 
+                className="text-black"
               >
-                <Option value="">Pilih Barang</Option>
+                <Option>Pilih Barang</Option>
                 {inventory.map((item) => (
-                  <Option key={item.id} value={item.id}>
+                  <Option key={item.id} value={item.id} className="text-black">
                     {item.name} (Stok: {item.stock}) - Rp {item.price}
                   </Option>
+                  
                 ))}
               </Select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Quantity</label>
+              <label className="block text-sm font-medium">Jumlah</label>
               <input
                 type="number"
+                min="1"
                 value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value)))}
+                onChange={(e) => setQuantity(Number(e.target.value))}
                 className="w-full p-2 border border-gray-300 rounded"
               />
             </div>
-
-            <div className="mt-4">
-              <Button type="button" onClick={handleAddToCart}>
-                Tambah ke Keranjang
-              </Button>
-            </div>
           </div>
 
-          <div className="mt-6">
-            {selectedCustomerName && (
-              <Typography variant="h6">Customer: {selectedCustomerName}</Typography>
-            )}
-            <Typography variant="h6">Keranjang (Struk)</Typography>
-            {carts.length > 0 ? (
-              <div className="space-y-4 p-4 border border-dashed">
-                <div className="flex justify-between font-bold">
-                  <div className="w-2/5">Nama</div>
-                  <div className="w-1/5 text-center">Qty</div>
-                  <div className="w-1/5 text-right">Harga</div>
-                  <div className="w-1/5"></div>
-                </div>
-                {carts.map((cart) => (
-                  <div key={cart.id} className="flex justify-between items-center">
-                    <div className="w-2/5">{cart.name}</div>
-                    <div className="w-1/5 text-center">{cart.qty}</div>
-                    <div className="w-1/5 text-right">
-                      Rp {cart.total_price.toLocaleString()}
-                    </div>
-                    <div className="w-1/5 flex justify-end">
-                      <Button
-                        size="sm"
-                        onClick={() => handleDeleteItem(cart.id)}
-                        color="red"
-                      >
-                        Hapus
-                      </Button>
-                      <input
-                        type="number"
-                        value={cart.qty}
-                        onChange={(e) =>
-                          handleUpdateQuantity(cart.id, parseInt(e.target.value))
-                        }
-                        className="w-16 ml-2 p-1 text-center"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <Typography variant="body2">Keranjang kosong</Typography>
-            )}
-            <div className="mt-4">
-              <Typography variant="h6">Total: Rp {totalPrice.toLocaleString()}</Typography>
-            </div>
-            <div className="flex justify-between mt-4">
-              <Button type="submit" disabled={loading || carts.length === 0}>
-                {loading ? "Loading..." : "Bayar"}
-              </Button>
-              <Button type="button" onClick={generatePDF}>
-                Download PDF
-              </Button>
-            </div>
-          </div>
+          <Button
+            type="button"
+            variant="filled"
+            className="mt-4 bg-black text-white"
+            onClick={handleAddToCart}
+          >
+            Tambah Keranjang
+          </Button>
         </form>
+
+        {carts.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold ">Table Keranjang</h3>
+            <div className="overflow-x-auto mt-4">
+              <table className="min-w-full text-sm border">
+                <thead className="bg-black text-white ">
+                  <tr>
+                    <th className="border p-2">Nama</th>
+                    <th className="border p-2">Qty</th>
+                    <th className="border p-2">Harga</th>
+                    <th className="border p-2">Total</th>
+                    <th className="border p-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {carts.map((item) => (
+                    <tr key={item.id} className="text-center">
+                      <td className="border p-2">{item.name}</td>
+                      <td className="border p-2"> {item.qty}
+                      </td>
+                      <td className="border p-2">Rp {item.price}</td>
+                      <td className="border p-2">Rp {item.total_price}</td>
+                      <td className="border p-2">
+                        <Button
+                          variant="filled"
+                          color="red"
+                          onClick={() => handleDeleteItem(item.id)}
+                        >
+                          Hapus
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-4">
+              <h3 className="font-semibold text-xl">Total: Rp {totalPrice.toLocaleString()}</h3>
+              <label className="block text-sm">Dibayar</label>
+              <input
+                type="number"
+                value={paidAmount}
+                onChange={handlePaidAmountChange}
+                className="p-5 border rounded text-xl "
+              />
+              <div className="mt-2">
+                <h4 className="text-sm font-semibold text-red-500">Kembalian: Rp {changeAmount.toLocaleString()}</h4>
+              </div>
+            </div>
+
+            <div className="mt-4 flex">
+              <Button onClick={generatePDF} color="lime">
+                Cetak Struk
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="ml-4"
+                color="black"
+              >
+                {loading ? "Processing..." : "Submit"}
+              </Button>
+            </div>
+          </div>
+        )}
       </CardBody>
     </Card>
+    </>
   );
 }
 
