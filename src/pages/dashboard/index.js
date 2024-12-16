@@ -1,12 +1,25 @@
+import Costumer from './costumer.jsx';
+import Tables from './tables.jsx';
+import Notifications from './notifications.jsx';
+import BarangMasuk from './BarangMasuk.jsx';
+import BarangKeluar from './BarangKeluar.jsx';
+import LaporanInventory from './LaporanInventory.jsx';
+import DaftarGaji from './DaftarGaji.jsx';
+import PengelolaanGaji from './PengelolaanGaji.jsx';
+import LaporanGaji from './LaporanGaji.jsx';
+import Kasir from './Kasir.jsx';
+import LaporanPembayaran from './LaporanPembayaran.jsx';
 
-export { default as Costumer } from './Costumer.jsx';
-export { default as Tables } from './Tables.jsx';
-export { default as Notifications } from './Notifications.jsx';
-export { default as BarangMasuk } from './BarangMasuk.jsx';
-export { default as BarangKeluar } from './BarangKeluar.jsx';
-export { default as LaporanInventory } from './LaporanInventory.jsx';
-export { default as DaftarGaji } from './DaftarGaji.jsx'; // Ensure this line exists
-export { default as PengelolaanGaji } from './PengelolaanGaji.jsx';
-export { default as LaporanGaji } from './LaporanGaji.jsx';
-export { default as Kasir } from './Kasir.jsx';
-export { default as LaporanPembayaran } from './LaporanPembayaran.jsx';
+export {
+  Costumer,
+  Tables,
+  Notifications,
+  BarangMasuk,
+  BarangKeluar,
+  LaporanInventory,
+  DaftarGaji,
+  PengelolaanGaji,
+  LaporanGaji,
+  Kasir,
+  LaporanPembayaran
+};
