@@ -19,7 +19,7 @@ function App() {
   return (
     <Routes>
       <Route path="/auth/*" element={<Auth />} />
-      <Route path="/custumer" element={<Dashboard />} />
+      <Route path="/home" element={<Dashboard />} />
     
       <Route
         path="/dashboard/*"
