@@ -26,7 +26,7 @@ export function SignIn() {
         const token = response.data.token;
         localStorage.setItem('authToken', token);
         alert('Login successful!');
-        navigate('/dashboard/home');
+        navigate('/dashboard/customer');
       } else {
         setMsg('Token not found in the response.');
       }
