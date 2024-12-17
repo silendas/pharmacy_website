@@ -130,11 +130,13 @@ export const routes = (roleId) => {
   switch(roleId) {
     case 1:
       return allMenus;
-    case 2:
+      case 2:
       return [
         {
           ...allMenus[0],
-          pages: allMenus[0].pages.filter(page => page.name === "Pembayaran")
+          pages: allMenus[0].pages.filter(page => 
+            page.name === "Pembayaran" || page.name === "Costumer"
+          )
         },
         allMenus[1]
       ];
