@@ -21,14 +21,14 @@ export function SignIn() {
 
     try {
       const response = await api.post('/users/login', { username, password });
-      console.log(response.data); // For debugging response
       if (response.data && response.data.token) {
         const token = response.data.token;
         localStorage.setItem('authToken', token);
+        // Store role_id from token payload
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        localStorage.setItem('roleId', payload.role_id);
         alert('Login successful!');
         navigate('/dashboard/customer');
-      } else {
-        setMsg('Token not found in the response.');
       }
     } catch (error) {
       console.error(error);

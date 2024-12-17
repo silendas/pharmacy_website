@@ -32,14 +32,16 @@ export function Auth() {
     },
   ];
 
+  const authROutes = routes(1);
+
   return (
     <div className="relative min-h-screen w-full">
       <Routes>
-        {routes.map(
+        {authROutes.map(
           ({ layout, pages }) =>
             layout === "auth" &&
             pages.map(({ path, element }) => (
-              <Route exact path={path} element={element} />
+              <Route key={path} exact path={path} element={element} />
             ))
         )}
       </Routes>

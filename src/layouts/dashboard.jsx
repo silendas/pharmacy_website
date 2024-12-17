@@ -10,6 +10,9 @@ export function Dashboard() {
   const { sidenavType } = controller;
   const location = useLocation();
 
+  const roleId = parseInt(localStorage.getItem('roleId'));
+  const filteredRoutes = routes(roleId);
+
   // Fungsi rekursif untuk merender rute, termasuk dropdown dan sub-dropdown
   const renderRoutes = (pages) => {
     return pages.map(({ path, element, dropdown, pages: subpages }) => {
@@ -24,7 +27,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-blue-gray-50/50">
       <Sidenav
-        routes={routes}
+        routes={filteredRoutes}
         brandImg={
           sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
         }
@@ -44,7 +47,7 @@ export function Dashboard() {
 
         {/* Render semua Routes */}
         <Routes>
-          {routes.map(({ layout, pages }) =>
+          {filteredRoutes.map(({ layout, pages }) =>
             layout === "dashboard" && renderRoutes(pages)
           )}
         </Routes>
